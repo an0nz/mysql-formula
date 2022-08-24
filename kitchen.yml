@@ -7,6 +7,7 @@ driver:
   use_sudo: false
   privileged: true
   run_command: /usr/lib/systemd/systemd
+  use_internal_docker_network: true
 
 provisioner:
   name: salt_solo
@@ -284,3 +285,45 @@ suites:
     verifier:
       inspec_tests:
         - path: test/integration/default
+
+  - name: master-pxc
+    driver:
+      hostname: master-pxc
+      instance_name: master-pxc
+    provisioner:
+      state_top:
+        base:
+          '*':
+            - mysql._mapdata
+            - mysql
+      pillars:
+        top.sls:
+          base:
+            '*':
+              - mysql
+      pillars_from_files:
+        mysql.sls: test/salt/pillar/master-pxc.sls
+    verifier:
+      inspec_tests:
+        - path: test/integration/percona
+
+  - name: member-pxc
+    driver:
+      hostname: member-pxc
+      links: master-pxc:master-pxc
+    provisioner:
+      state_top:
+        base:
+          '*':
+            - mysql._mapdata
+            - mysql
+      pillars:
+        top.sls:
+          base:
+            '*':
+              - mysql
+      pillars_from_files:
+        mysql.sls: test/salt/pillar/member-pxc.sls
+    verifier:
+      inspec_tests:
+        - path: test/integration/percona
