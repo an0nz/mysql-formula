@@ -41,9 +41,46 @@ mysql:
         - information_schema
         - performance_schema
       explicit_defaults_for_timestamp: 1   # strict ansi supports sane defaults
+      # You can configure galera and percona
+      # binlog_format: ROW
+      # default-storage-engine: innodb
+      # innodb_autoinc_lock_mode: 2
+      # pxc_strict_mode: ENFORCING
+      # pxc-encrypt-cluster-traffic: 'OFF'
+      # wsrep_cluster_address: gcomm://pxc-master,pxc-member
+      # wsrep_cluster_name: "my_wsrep_cluster"
+      # wsrep_slave_threads: 8
+      # wsrep_certify_nonPK: 1
+      # wsrep_max_ws_rows: 131072
+      # wsrep_max_ws_size: 1073741824
+      # wsrep_debug: 0
+      # wsrep_retry_autocommit: 1
+      # wsrep_auto_increment_control: 1
+      # wsrep_causal_reads: 0
+      # wsrep_provider: /usr/lib/galera4/libgalera_smm.so
+      # wsrep_sst_method: xtrabackup-v2
     mysql:
       # my.cnf param that not require value
       no-auto-rehash: noarg_present
+
+  # Bootstrap a galera or percona cluster
+  # When working with a cluster, delegate 1 server as the config master and handle all user/db/bootstrapping etc with pillars for that nodejs
+  # All other servers should simply be configured to install using the same root and salt credentials
+  galera_cluster:
+    # MUST only be set to true for 1 member of the cluster, that member MUST be configured first so the others can join
+    # bootstrap: true (Default false)
+    # bootstrap_command: /usr/bin/galera_new_cluster (Default)
+    # grastate: /var/lib/mysql/grastate.dat (Default)
+
+  # Percona can be installed using the formula, either xtradb or percona-server
+  # The following combined with galera_cluster above can be used for a PXC 8.0 XtraDB cluster installation
+  # serverpkg: percona-xtradb-cluster
+  # service: mysql
+  # percona:
+    # Used with percona-release setup to configure which percona release repository to use
+    # Refer to https://docs.percona.com/percona-software-repositories/repository-location.html
+    # repo: pxc-80 (Default)
+    # bootstrap_command: mysql@bootstrap.service (Default)
 
   salt_user:
     salt_user_name: 'salt'
