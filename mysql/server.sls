@@ -41,6 +41,7 @@ include:
 {%-       endif %}
 {%-     endif %}
 
+{%- set refresh_packages = false %}
 {%    if mysql.serverpkg == 'mysql-community-server' %}
 mysql-community-server_repo:
   pkgrepo.managed:
@@ -50,6 +51,23 @@ mysql-community-server_repo:
     - refresh: True
     - require_in:
       - pkg: mysql-community-server
+
+{%    elif mysql.serverpkg.startswith('percona-') %}
+{%-     set refresh_packages = true %}
+percona_release_pkg:
+  pkg.installed:
+    - sources:
+      - percona-release: {{ mysql.percona.releasepkg }}
+
+percona_release_setup:
+  cmd.run:
+    - name: percona-release setup -y {{ mysql.percona.repo }}
+    - unless: percona-release show | grep {{ mysql.percona.repo }}
+    - require:
+      - pkg: percona_release_pkg
+    - require_in:
+      - pkg: {{ mysql.serverpkg }}
+
 {%    endif %}
 
 mysql_debconf_utils:
@@ -156,6 +174,9 @@ mysql_install_datadir:
 mysqld-packages:
   pkg.installed:
     - name: {{ mysql.serverpkg }}
+{%- if refresh_packages %}
+    - refresh: True
+{%- endif %}
 {%- if os_family == 'Debian' and mysql_root_password %}
     - require:
       - debconf: mysql_debconf
@@ -216,10 +237,51 @@ mysql_initialize:
       - file: /var/log/mysql
 {%- endif %}
 
+{%- set percona_bootstrap = false %}
+{%- if mysql.galera_cluster.bootstrap == true %}
+{%    if not salt['file.file_exists'](mysql.galera_cluster.grastate) %}
+{%-     if mysql.serverpkg.startswith('percona-') %}
+{%-       set percona_bootstrap = true %}
+{%-     else %}
+mysql_galera_bootstrap:
+  cmd.run:
+    - name: {{ mysql.galera_cluster.bootstrap_command }}
+    - require_in:
+      - service: mysqld-service-running
+{%-     endif %}
+{%-   elif mysql.serverpkg.startswith('percona-') 
+        and salt['service.status'](mysql.percona.bootstrap_command) != ''  %}
+        
+mysql_percona_bootstrap_finish:
+  service.dead:
+    - name: {{ mysql.percona.bootstrap_command }}
+    - unless:
+      - mysql -u {{ mysql_salt_user }} -h{{ mysql_host }} {% if mysql_salt_password %}-p{{ mysql_salt_password }}{%- endif %}
+              --execute="SHOW STATUS LIKE 'wsrep_cluster_size';" --silent | awk '{print $2}' | rev | head -c1 | grep "[0|1]"
+    - onchanges_in:
+      - service: mysqld-service-running
+
+{%-   endif %}
+{%- endif %}
+
+
+{%- if percona_bootstrap %}
+mysqld_service_enabled:
+  service.enabled:
+    - name: {{ mysql.service }}
+    - require:
+      - pkg: {{ mysql.serverpkg }}
+
+mysqld-service-running:
+  service.running:
+    - name: {{ mysql.percona.bootstrap_command }}
+    - enable: False
+{%- else %}
 mysqld-service-running:
   service.running:
     - name: {{ mysql.service }}
     - enable: True
+{%- endif %}
     - require:
       - pkg: {{ mysql.serverpkg }}
 {%- if (os_family in ['RedHat', 'Suse'] and mysql.version is defined

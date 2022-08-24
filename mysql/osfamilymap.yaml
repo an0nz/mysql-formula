@@ -33,6 +33,12 @@ Debian:
         key_buffer_size: 16M
     append: |
       !includedir /etc/mysql/conf.d/
+  galera_config:
+    sections:
+      mysqld:
+        wsrep_provider: /usr/lib/galera4/libgalera_smm.so
+  percona:
+    releasepkg: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
 
 RedHat:
   service: mysqld
@@ -50,6 +56,8 @@ RedHat:
         socket: /var/lib/mysql/mysql.sock
         bind_address: 127.0.0.1
         symbolic_links: 0
+  percona:
+    releasepkg: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
 
 Suse:
   serverpkg: mariadb

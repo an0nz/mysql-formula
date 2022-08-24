@@ -8,6 +8,16 @@ mysql:
   devpkg: mysql-devel
   debconf_utils: debconf-utils
 
+  galera_cluster:
+    # bootstrap MUST only be set to true for 1 member of the cluster, that member MUST be configured first so the others can join
+    bootstrap: false
+    bootstrap_command: /usr/bin/galera_new_cluster
+    grastate: /var/lib/mysql/grastate.dat
+
+  percona:
+    repo: pxc-80
+    bootstrap_command: mysql@bootstrap.service
+
   config:
     file: /etc/mysql/my.cnf
     sections:
@@ -23,6 +33,14 @@ mysql:
     apparmor:
       dir: /etc/apparmor.d/local
       file: usr.sbin.mysqld
+
+  galera_config:
+    enabled: false
+    file: galera.cnf
+    sections:
+      mysqld:
+        wsrep_provider: /usr/lib64/libgalera_smm.so
+        wsrep_sst_method: mariabackup
 
   macos:
     userhomes: /Users

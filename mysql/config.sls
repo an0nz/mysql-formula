@@ -29,7 +29,7 @@ mysql_server_config:
       - file: mysql_config_directory
 {%- endif %}
 
-{%- if "galera_config" in mysql %}
+{%- if mysql.galera_config.enabled %}
 mysql_galera_config:
   file.managed:
     - name: {{ mysql.config_directory + mysql.galera_config.file }}
