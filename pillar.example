@@ -64,23 +64,27 @@ mysql:
       no-auto-rehash: noarg_present
 
   # Bootstrap a galera or percona cluster
-  # When working with a cluster, delegate 1 server as the config master and handle all user/db/bootstrapping etc with pillars for that nodejs
-  # All other servers should simply be configured to install using the same root and salt credentials
+  # When working with a cluster, delegate 1 server as the config master and handle all
+  # user/db/bootstrapping etc with pillars for that nodejs
+  # All other servers should simply be configured to install using the same root and
+  # salt credentials
   galera_cluster:
-    # MUST only be set to true for 1 member of the cluster, that member MUST be configured first so the others can join
-    # bootstrap: true (Default false)
-    # bootstrap_command: /usr/bin/galera_new_cluster (Default)
-    # grastate: /var/lib/mysql/grastate.dat (Default)
+    # MUST only be set to true for 1 member of the cluster, that member MUST be
+    # configured first so the others can join
+    bootstrap: false
+    bootstrap_command: /usr/bin/galera_new_cluster (Default)
+    grastate: /var/lib/mysql/grastate.dat (Default)
 
   # Percona can be installed using the formula, either xtradb or percona-server
-  # The following combined with galera_cluster above can be used for a PXC 8.0 XtraDB cluster installation
+  # The following combined with galera_cluster above can be used for a PXC 8.0 XtraDB
+  # cluster installation
   # serverpkg: percona-xtradb-cluster
   # service: mysql
-  # percona:
-    # Used with percona-release setup to configure which percona release repository to use
-    # Refer to https://docs.percona.com/percona-software-repositories/repository-location.html
-    # repo: pxc-80 (Default)
-    # bootstrap_command: mysql@bootstrap.service (Default)
+  percona:
+    # Used with percona-release setup to configure repositories
+    # https://docs.percona.com/percona-software-repositories/repository-location.html
+    repo: pxc-80 (Default)
+    bootstrap_command: mysql@bootstrap.service (Default)
 
   salt_user:
     salt_user_name: 'salt'

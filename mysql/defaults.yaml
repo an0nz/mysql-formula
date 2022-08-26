@@ -9,7 +9,8 @@ mysql:
   debconf_utils: debconf-utils
 
   galera_cluster:
-    # bootstrap MUST only be set to true for 1 member of the cluster, that member MUST be configured first so the others can join
+    # bootstrap MUST only be set to true for 1 member of the cluster, that member
+    # MUST be configured first so the others can join
     bootstrap: false
     bootstrap_command: /usr/bin/galera_new_cluster
     grastate: /var/lib/mysql/grastate.dat

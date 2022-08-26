@@ -45,7 +45,7 @@ Fedora:
         bind_address: 127.0.0.1
 
   galera_config:
-    # Backwards compatibility for Fedora, previous formula configuration always had galera configured
+    # Backwards compatibility for previous installs using this formula
     enabled: true
     file: galera.cnf
     sections:
