@@ -4,7 +4,7 @@
 mysql:
   serverpkg: percona-xtradb-cluster
   service: mysql
-  
+
   percona:
     # Used with percona-release setup to configure which percona release repository to use
     # Refer to https://docs.percona.com/percona-software-repositories/repository-location.html
@@ -28,6 +28,9 @@ mysql:
         binlog_format: ROW
         default-storage-engine: innodb
         innodb_autoinc_lock_mode: 2
+        expire_logs_days: 7
+        max_binlog_size: 1024M
+        log-bin: binlog
 
   server:
     # Use this account for database admin (defaults to root)
@@ -47,25 +50,26 @@ mysql:
       datadir: /var/lib/mysql
       # port: 3307
       # plugin-load-add: auth_socket.so
-      binlog_do_db: foo
       auto_increment_increment: 5
-      binlog-ignore-db:
-        - mysql
-        - sys
-        - information_schema
-        - performance_schema
       binlog_format: ROW
       default-storage-engine: innodb
       innodb_autoinc_lock_mode: 2
+      expire_logs_days: 7
+      max_binlog_size: 1024M
+      log-bin: binlog
+      server-id: 1
+      log_replica_updates: 1
       pxc_strict_mode: ENFORCING
       pxc-encrypt-cluster-traffic: 'OFF'
       wsrep_cluster_address: gcomm://master-pxc,member-pxc
+      wsrep_provider: /usr/lib/galera4/libgalera_smm.so
       wsrep_cluster_name: "my_wsrep_cluster"
-      wsrep_slave_threads: 8
+      wsrep_applier_threads: 8
       wsrep_certify_nonPK: 1
       wsrep_max_ws_rows: 131072
       wsrep_max_ws_size: 1073741824
       wsrep_debug: 0
+      wsrep_log_conflicts: noarg_present
       wsrep_retry_autocommit: 1
       wsrep_auto_increment_control: 1
       wsrep_causal_reads: 0
@@ -75,23 +79,27 @@ mysql:
       no-auto-rehash: noarg_present
 
   galera_cluster:
-    # bootstrap MUST only be set to true for 1 member of the cluster, that member MUST be configured first so the others can join
+    # bootstrap MUST only be set to true for 1 member of the cluster, that member MUST
+    # be configured first so the others can join
     bootstrap: true
-  
+
   galera_config:
     enabled: true
     sections:
       mysqld:
+        server-id: 1
+        log_replica_updates: 1
         pxc_strict_mode: ENFORCING
         pxc-encrypt-cluster-traffic: 'OFF'
         wsrep_cluster_address: gcomm://master-pxc,member-pxc
         wsrep_provider: /usr/lib/galera4/libgalera_smm.so
         wsrep_cluster_name: "my_wsrep_cluster"
-        wsrep_slave_threads: 8
+        wsrep_applier_threads: 8
         wsrep_certify_nonPK: 1
         wsrep_max_ws_rows: 131072
         wsrep_max_ws_size: 1073741824
         wsrep_debug: 0
+        wsrep_log_conflicts: noarg_present
         wsrep_retry_autocommit: 1
         wsrep_auto_increment_control: 1
         wsrep_causal_reads: 0
