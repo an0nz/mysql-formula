@@ -241,6 +241,7 @@ mysql_initialize:
 {%- if mysql.galera_cluster.bootstrap == true %}
 {%    if not salt['file.file_exists'](mysql.galera_cluster.grastate) %}
 {%-     if mysql.serverpkg.startswith('percona-') %}
+# Bootstrap Percona {{ mysql.galera_cluster.grastate }} does not exist
 {%-       set percona_bootstrap = true %}
 {%-     else %}
 mysql_galera_bootstrap:
@@ -250,12 +251,12 @@ mysql_galera_bootstrap:
       - service: mysqld-service-running
 {%-     endif %}
 {%-   elif mysql.serverpkg.startswith('percona-')
-        and salt['service.status'](mysql.percona.bootstrap_command) != ''  %}
-
+        and salt['service.status'](mysql.percona.bootstrap_command) %}
+# BOOTSTRAP {{ salt['service.status'](mysql.percona.bootstrap_command) }}
 mysql_percona_bootstrap_running:
   service.running:
     - name: {{ mysql.percona.bootstrap_command }}
-    - only_if:
+    - onlyif:
       - mysql -u {{ mysql_salt_user }} -h{{ mysql_host }} {% if mysql_salt_password %}-p{{ mysql_salt_password }}{%- endif %}
               --execute="SHOW STATUS LIKE 'wsrep_cluster_size';" --silent | awk '{print $2}' | rev | head -c1 | grep "[0|1]"
     - watch:
