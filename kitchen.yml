@@ -289,7 +289,7 @@ suites:
   - name: master-pxc
     driver:
       hostname: master-pxc
-      instance_name: master-pxc
+      instance_name: master-<%= ENV['CI_JOB_NAME'] || "pxc" %>
     provisioner:
       state_top:
         base:
@@ -310,7 +310,7 @@ suites:
   - name: member-pxc
     driver:
       hostname: member-pxc
-      links: master-pxc:master-pxc
+      links: master-<%= ENV['CI_JOB_NAME'] || "pxc" %>:master-pxc
     provisioner:
       state_top:
         base:
