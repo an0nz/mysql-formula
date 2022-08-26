@@ -249,9 +249,22 @@ mysql_galera_bootstrap:
     - require_in:
       - service: mysqld-service-running
 {%-     endif %}
-{%-   elif mysql.serverpkg.startswith('percona-') 
+{%-   elif mysql.serverpkg.startswith('percona-')
         and salt['service.status'](mysql.percona.bootstrap_command) != ''  %}
-        
+
+mysql_percona_bootstrap_running:
+  service.running:
+    - name: {{ mysql.percona.bootstrap_command }}
+    - only_if:
+      - mysql -u {{ mysql_salt_user }} -h{{ mysql_host }} {% if mysql_salt_password %}-p{{ mysql_salt_password }}{%- endif %}
+              --execute="SHOW STATUS LIKE 'wsrep_cluster_size';" --silent | awk '{print $2}' | rev | head -c1 | grep "[0|1]"
+    - watch:
+      - pkg: {{ mysql.serverpkg }}
+      - file: mysql_config
+{%- if "config_directory" in mysql and "server_config" in mysql %}
+      - file: mysql_server_config
+{%- endif %}
+
 mysql_percona_bootstrap_finish:
   service.dead:
     - name: {{ mysql.percona.bootstrap_command }}
