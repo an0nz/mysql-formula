@@ -296,6 +296,7 @@ mysqld-service-running:
     - name: {{ mysql.service }}
     - enable: True
 {%- endif %}
+    - reload: True
     - require:
       - pkg: {{ mysql.serverpkg }}
 {%- if (os_family in ['RedHat', 'Suse'] and mysql.version is defined
